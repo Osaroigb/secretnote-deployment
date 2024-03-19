@@ -94,4 +94,4 @@ def read_note():
 
 
 if __name__ == "__main__":
-    app.run(host=os.getenv("HOST"), port=os.getenv("PORT"), debug=os.getenv("DEBUG"))
+    app.run(host=os.getenv("HOST"), port=os.getenv("PORT"), debug=True)
