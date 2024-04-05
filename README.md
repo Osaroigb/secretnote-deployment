@@ -78,7 +78,7 @@ Before you start, make sure you have installed:
    Execute the following command to run the Flask server:
 
    ```bash
-   python app.py
+   python run.py
    ```
 
    By default, Flask will serve the API on `http://127.0.0.1:5000/`.
@@ -87,11 +87,8 @@ Before you start, make sure you have installed:
 
    The API has two main endpoints:
 
-   - Create a secret note: `POST /create-note`
-     - Endpoint to create a secret note. The request JSON should contain the `secret_note`.
-
-   - Read a secret note: `POST /read-note`
-     - Endpoint to read a secret note. The request JSON should contain the `secret_link`.
+   - Create a secret note: `POST /create-secret-note`
+     - Endpoint to create a privnote link to a secret note. The request JSON should contain the `secret_note`.
 
    You can use tools like [Postman](https://www.postman.com/) or [curl](https://curl.se/) to interact with these endpoints. Refer to the [API documentation](https://documenter.getpostman.com/view/23691550/2sA358c5dQ) for detailed endpoint information.
 
