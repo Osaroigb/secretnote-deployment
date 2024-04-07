@@ -11,6 +11,15 @@ load_dotenv()
 
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def get_home():
+    return jsonify({
+        'status': True,
+        'message': 'Welcome to Privnote API',
+        'statusCode': 200,
+        'data': []
+    }), 200
+
 @app.route('/create-secret-note', methods=['POST'])
 def create_secret_note():
     driver = setup_chrome_driver()
