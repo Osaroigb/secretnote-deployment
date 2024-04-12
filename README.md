@@ -68,7 +68,7 @@ Before you start, make sure you have installed:
 
 5. **Update `.env` File**
 
-   Open the `.env` file and fill in your `<API_BASE_URL>` and other environment variables
+   Open the `.env` file and fill in other environment variables
 
 
 ### Running the API Locally

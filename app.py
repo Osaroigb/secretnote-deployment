@@ -1,15 +1,17 @@
-import os
+# import os
 import time
 from dotenv import load_dotenv
+import undetected_chromedriver as uc
 from driver import setup_chrome_driver
 from flask import Flask, request, jsonify
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 load_dotenv()
-
 app = Flask(__name__)
+driver = uc.Chrome(headless=True,use_subprocess=False)
 
 @app.route('/', methods=['GET'])
 def get_home():
@@ -26,31 +28,68 @@ def create_secret_note():
 
     try:
         secret_note = request.json.get("secret_note")
-        privnote_url = os.getenv("PRIV_URL", "default_url")        
-        driver.get(privnote_url)
+        # driver.get("https://privnote.com/")
 
-        textarea = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.NAME, "note_text"))
-        )
+        driver.get("https://privnote.com/legacy")
 
-        textarea.clear()
-        textarea.send_keys(secret_note)
+        # cookie = {'name': 'token', 'value': '8a093nds0e38'}
+        # driver.add_cookie(cookie)
 
-        button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "encrypt_note"))
-        )
+        actions = ActionChains(driver)
+        time.sleep(2)
 
-        button.click()
+        # driver.execute_script("window.scrollBy(0, 1000);")
+        # driver.execute_script("window.localStorage.setItem('token','8a093nds0e38');")
 
-        input_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "note_link_input"))
-        )
-        input_content = input_element.get_attribute("value")
+        # time.sleep(5)
 
-        print('secret note link')
-        print(input_content)
+        # dismiss_button = WebDriverWait(driver, 10).until(
+        #     EC.element_to_be_clickable((By.ID, "dismiss-button"))
+        # )
+
+        # Click the dismiss button to close the ad
+        # dismiss_button.click()
+
+        # text_area_element = WebDriverWait(driver, 10).until(
+            # EC.presence_of_element_located((By.NAME, "note_text"))
+            # EC.presence_of_element_located((By.NAME, "note_raw"))
+            # EC.presence_of_element_located((By.ID, "note_raw"))
+        # )
+
+        text_area_element = driver.find_element(By.ID, "note_raw")
+        actions.move_to_element(text_area_element).click().perform()
+
+        text_area_element.clear()
+        text_area_element.send_keys(secret_note)
 
         time.sleep(2)
+
+        # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+        # button = WebDriverWait(driver, 10).until(
+        #     EC.element_to_be_clickable((By.ID, "encrypt_note"))
+        # )
+
+        # button.click()
+
+        button = driver.find_element(By.ID, "encrypt_note")
+        actions.move_to_element(button).click().perform()
+        # driver.execute_script("window.scrollBy(0, 1000);")
+        time.sleep(2)
+
+        # input_element = WebDriverWait(driver, 10).until(
+        #     EC.presence_of_element_located((By.ID, "note_link_input"))
+        # )
+        # input_content = input_element.get_attribute("value")
+
+        # print('secret note link')
+        # print(input_content)
+
+        # Find the element by its ID
+        email_link_element = driver.find_element(By.ID, "mailto_link")
+        href_value = email_link_element.get_attribute("href")
+
+        # time.sleep(2)
 
         current_url = driver.current_url
         print(f"The current URL is: {current_url}")
@@ -59,7 +98,7 @@ def create_secret_note():
             'status': True,
             'message': 'Secret note link retrieved successfully',
             'statusCode': 200,
-            'data': {'secret_link': current_url}
+            'data': {'secret_link': href_value}
         }), 200
         
     except Exception as e:
