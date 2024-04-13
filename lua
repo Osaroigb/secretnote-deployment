@@ -13,3 +13,4 @@ PRIVNOTE-DEPLOYMENT/
     |-- README.md
     |-- requirements.txt
     |-- run.py
+    |-- test.py

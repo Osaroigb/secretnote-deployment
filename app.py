@@ -1,105 +1,50 @@
-# import os
-import time
+import os
+import json
+import requests
 from dotenv import load_dotenv
-import undetected_chromedriver as uc
-from driver import setup_chrome_driver
 from flask import Flask, request, jsonify
-from selenium.webdriver.common.by import By
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 
 load_dotenv()
+API_BASE_URL = os.getenv("API_BASE_URL")
+
 app = Flask(__name__)
-driver = uc.Chrome(headless=True,use_subprocess=False)
 
-@app.route('/', methods=['GET'])
-def get_home():
-    return jsonify({
-        'status': True,
-        'message': 'Welcome to Privnote API',
-        'statusCode': 200,
-        'data': []
-    }), 200
-
-@app.route('/create-secret-note', methods=['POST'])
-def create_secret_note():
-    driver = setup_chrome_driver()
-
+@app.route('/create-note', methods=['POST'])
+def create_note():
     try:
-        secret_note = request.json.get("secret_note")
-        # driver.get("https://privnote.com/")
+        payload = request.json
+        secret_note = payload.get("secret_note")
 
-        driver.get("https://privnote.com/legacy")
+        headers = {"Content-Type": "text/plain"}
+        response = requests.post(API_BASE_URL, data=secret_note, headers=headers)
 
-        # cookie = {'name': 'token', 'value': '8a093nds0e38'}
-        # driver.add_cookie(cookie)
-
-        actions = ActionChains(driver)
-        time.sleep(2)
-
-        # driver.execute_script("window.scrollBy(0, 1000);")
-        # driver.execute_script("window.localStorage.setItem('token','8a093nds0e38');")
-
-        # time.sleep(5)
-
-        # dismiss_button = WebDriverWait(driver, 10).until(
-        #     EC.element_to_be_clickable((By.ID, "dismiss-button"))
-        # )
-
-        # Click the dismiss button to close the ad
-        # dismiss_button.click()
-
-        # text_area_element = WebDriverWait(driver, 10).until(
-            # EC.presence_of_element_located((By.NAME, "note_text"))
-            # EC.presence_of_element_located((By.NAME, "note_raw"))
-            # EC.presence_of_element_located((By.ID, "note_raw"))
-        # )
-
-        text_area_element = driver.find_element(By.ID, "note_raw")
-        actions.move_to_element(text_area_element).click().perform()
-
-        text_area_element.clear()
-        text_area_element.send_keys(secret_note)
-
-        time.sleep(2)
-
-        # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-
-        # button = WebDriverWait(driver, 10).until(
-        #     EC.element_to_be_clickable((By.ID, "encrypt_note"))
-        # )
-
-        # button.click()
-
-        button = driver.find_element(By.ID, "encrypt_note")
-        actions.move_to_element(button).click().perform()
-        # driver.execute_script("window.scrollBy(0, 1000);")
-        time.sleep(2)
-
-        # input_element = WebDriverWait(driver, 10).until(
-        #     EC.presence_of_element_located((By.ID, "note_link_input"))
-        # )
-        # input_content = input_element.get_attribute("value")
-
-        # print('secret note link')
-        # print(input_content)
-
-        # Find the element by its ID
-        email_link_element = driver.find_element(By.ID, "mailto_link")
-        href_value = email_link_element.get_attribute("href")
-
-        # time.sleep(2)
-
-        current_url = driver.current_url
-        print(f"The current URL is: {current_url}")
+        if response.status_code == 200:
+            note_url = response.text.strip()
+            # entry_uuid = response.headers.get("X-Entry-Uuid")
+            # entry_key = response.headers.get("X-Entry-Key")
+            entry_expire = response.headers.get("X-Entry-Expire")
+            
+            return jsonify({
+                'status': True,
+                'message': 'Secret note created successfully',
+                'statusCode': 200,
+                'data': {
+                    "note_url": note_url,
+                    # "uuid": entry_uuid,
+                    # "key": entry_key,
+                    "expire": entry_expire
+                }
+            }), 200
+        else:
+            raise Exception("Failed to create secret note.")
         
+    except json.JSONDecodeError:
         return jsonify({
-            'status': True,
-            'message': 'Secret note link retrieved successfully',
-            'statusCode': 200,
-            'data': {'secret_link': href_value}
-        }), 200
+            'status': False, 
+            'error_message': 'Invalid JSON format', 
+            'statusCode': 400, 
+            'data': {}
+        }), 400
         
     except Exception as e:
         return jsonify({
@@ -108,6 +53,38 @@ def create_secret_note():
             'statusCode': 500,
             'data': {}
         }), 500
+
+
+@app.route('/read-note', methods=['POST'])
+def read_note():
+    try:
+        payload = request.json
+        secret_link = payload.get("secret_link")
+
+        response = requests.get(secret_link)
+
+        if response.status_code == 200:
+            return jsonify({
+                'status': True,
+                'message': 'Secret note retrieved successfully',
+                'statusCode': 200,
+                'data': { 'note_content': response.text }
+            }), 200
+        else:
+            raise Exception("Failed to read secret note.")
+        
+    except json.JSONDecodeError:
+        return jsonify({
+            'status': False, 
+            'error_message': 'Invalid JSON format', 
+            'statusCode': 400, 
+            'data': {}
+        }), 400
     
-    finally:
-        driver.quit()
+    except Exception as e:
+        return jsonify({
+            'status': False,
+            'error_message': str(e),
+            'statusCode': 500,
+            'data': {}
+        }), 500
