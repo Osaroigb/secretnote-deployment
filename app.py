@@ -9,6 +9,17 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 app = Flask(__name__)
 
+
+@app.route('/', methods=['GET'])
+def get_home():
+    return jsonify({
+        'status': True,
+        'message': 'Welcome to Privnote API',
+        'statusCode': 200,
+        'data': []
+    }), 200
+
+
 @app.route('/create-note', methods=['POST'])
 def create_note():
     try:
