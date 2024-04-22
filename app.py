@@ -109,12 +109,15 @@ def create_note():
         secret_note = payload.get("secret_note")
         
         #? Prepare the command to run
-        command = ["npx", "cryptgeon", "send", "text", secret_note] #? development command
-        # command = ["/usr/bin/npx", "cryptgeon", "send", "text", secret_note] #? production command
+        command = ["npx", "cryptgeon", "send", "text", secret_note] 
         
         #? Running the CLI command and capturing the output
-        result = subprocess.run(command, capture_output=True, text=True)
-        
+        # result = subprocess.run(command, capture_output=True, text=True)
+        result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+
         if result.returncode == 0:
             #? Assuming the URL is in the output and needs parsing
             note_string = result.stdout.strip()  #? You may need to parse this if it includes more than the URL
