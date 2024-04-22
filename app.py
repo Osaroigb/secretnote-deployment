@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import subprocess
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 
@@ -20,8 +21,8 @@ def get_home():
     }), 200
 
 
-@app.route('/create-note', methods=['POST'])
-def create_note():
+@app.route('/test-note', methods=['POST'])
+def test_note():
     try:
         payload = request.json
         secret_note = payload.get("secret_note")
@@ -84,6 +85,54 @@ def read_note():
         else:
             raise Exception("Failed to read secret note.")
         
+    except json.JSONDecodeError:
+        return jsonify({
+            'status': False, 
+            'error_message': 'Invalid JSON format', 
+            'statusCode': 400, 
+            'data': {}
+        }), 400
+    
+    except Exception as e:
+        return jsonify({
+            'status': False,
+            'error_message': str(e),
+            'statusCode': 500,
+            'data': {}
+        }), 500
+    
+
+@app.route('/create-note', methods=['POST'])
+def create_note():
+    try:
+        payload = request.json
+        secret_note = payload.get("secret_note")
+        
+        #? Prepare the command to run
+        command = ["npx", "cryptgeon", "send", "text", secret_note]
+        
+        #? Running the CLI command and capturing the output
+        result = subprocess.run(command, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            #? Assuming the URL is in the output and needs parsing
+            note_string = result.stdout.strip()  #? You may need to parse this if it includes more than the URL
+            note_url = note_string.replace("Note created:\n\n", "")
+
+            print("Here's the secret note link below")
+            print(note_url)
+
+            return jsonify({
+                'status': True,
+                'message': 'Secret note created successfully',
+                'statusCode': 200,
+                'data': {
+                    "note_url": note_url
+                }
+            }), 200
+        else:
+            raise Exception("Failed to create secret note. " + result.stderr)
+    
     except json.JSONDecodeError:
         return jsonify({
             'status': False, 
