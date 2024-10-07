@@ -1,6 +1,6 @@
-# SecretNote-API
+# SecretNote API
 
-The SecretNote-API is a custom RESTful API built with Flask for creating and reading secret notes. Each note is created anonymously and can be accessed through a unique URL. The API is designed with simplicity in mind, focusing on the core functionality of managing secret notes.
+The SecretNote API is a custom RESTful API built with Flask for creating and reading secret notes. Each note is created anonymously and can be accessed through a unique URL. The API is designed with simplicity in mind, focusing on the core functionality of managing secret notes.
 
 ## Features
 
@@ -26,8 +26,8 @@ Before you start, make sure you have installed:
    Clone this repository to your local machine using the following command:
 
    ```bash
-   git clone https://github.com/<your-username>/SecretNote-API.git
-   cd SecretNote-API
+   git clone https://github.com/Osaroigb/secretnote-deployment.git
+   cd secretnote-deployment
    ```
 
 2. **Set Up a Virtual Environment (Optional)**
@@ -81,14 +81,14 @@ Before you start, make sure you have installed:
    python run.py
    ```
 
-   By default, Flask will serve the API on `http://127.0.0.1:5000/`.
+   By default, Flask will serve the API on `http://127.0.0.1:3300/`.
 
 2. **Accessing the API Endpoints**
 
    The API has two main endpoints:
 
    - Create a secret note: `POST /create-secret-note`
-     - Endpoint to create a privnote link to a secret note. The request JSON should contain the `secret_note`.
+     - Endpoint to create a [secretnote link](https://cryptgeon.org/note/7n5v5b6S6I5h5v7I516X4b5V5W64796O6Q4B6y4I7D5G6g7a65485B4g6K7G6I4j#1fb8dd65aca51e2c08e06c5e966adba2d1810c67b719f1fb749f2ed7b40c356f) to a secret note. The request JSON should contain the `secret_note`. An example link https://cryptgeon.org/note/7n5v5b6S6I5h5v7I516X4b5V5W64796O6Q4B6y4I7D5G6g7a65485B4g6K7G6I4j#1fb8dd65aca51e2c08e06c5e966adba2d1810c67b719f1fb749f2ed7b40c356f
 
    You can use tools like [Postman](https://www.postman.com/) or [curl](https://curl.se/) to interact with these endpoints. Refer to the [API documentation](https://documenter.getpostman.com/view/23691550/2sA358c5dQ) for detailed endpoint information.
 
