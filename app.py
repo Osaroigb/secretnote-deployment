@@ -127,7 +127,13 @@ def create_note():
         
         #? Running the CLI command and capturing the output
         # result = subprocess.run(command, capture_output=True, text=True)
-        result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+        # result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+
+        #? Set shell=True for Windows, False for macOS/Linux
+        shell_needed = True if os.name == 'nt' else False
+
+        #? Running the CLI command and capturing the output
+        result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL, shell=shell_needed)
 
         print("STDOUT:", result.stdout)
         print("STDERR:", result.stderr)
@@ -198,7 +204,13 @@ def upload_file():
         command = ["npx", "cryptgeon", "send", "file", filepath]
 
         #! Run the Cryptgeon CLI to upload the file and get the link
-        result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+        # result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+
+        #? Set shell=True for Windows, False for macOS/Linux
+        shell_needed = True if os.name == 'nt' else False
+
+        #? Running the CLI command and capturing the output
+        result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL, shell=shell_needed)
 
         print("STDOUT:", result.stdout)
         print("STDERR:", result.stderr)
