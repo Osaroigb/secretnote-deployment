@@ -119,17 +119,97 @@ def get_home():
 @app.route('/create-note', methods=['POST'])
 def create_note():
     try:
+        #? Retrieve query parameters
+        views = request.args.get('views')
+        minutes = request.args.get('minutes')
+        password = request.args.get('password')
+
+        #* Retrieve payload from POST request
         payload = request.json
         secret_note = payload.get("secret_note")
-        
-        #? Prepare the command to run
-        command = ["npx", "cryptgeon", "send", "text", secret_note] 
-        
-        #? Running the CLI command and capturing the output
-        # result = subprocess.run(command, capture_output=True, text=True)
-        # result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
 
-        #? Set shell=True for Windows, False for macOS/Linux
+        #! Validate secret_note presence
+        if not secret_note:
+            return jsonify({
+                'status': False,
+                'error_message': 'Secret note cannot be empty',
+                'statusCode': 400,
+                'data': {}
+            }), 400
+        
+        #? Validate mutually exclusive query parameters
+        if views and minutes:
+            return jsonify({
+                'status': False,
+                'error_message': 'Only one of "views" or "minutes" should be present, not both.',
+                'statusCode': 400,
+                'data': {}
+            }), 400
+        
+        #* Prepare the command to run
+        command = ["npx", "cryptgeon", "send", "text", secret_note] 
+
+        #! Validate and handle the 'views' parameter
+        if views:
+            try:
+                views = int(views)
+                if not (1 <= views <= 10):
+                    return jsonify({
+                        'status': False,
+                        'error_message': '"views" must be an integer between 1 and 10.',
+                        'statusCode': 400,
+                        'data': {}
+                    }), 400
+                
+                #? Add the views argument to the command
+                command.extend(["--views", str(views)])
+            except ValueError:
+                return jsonify({
+                    'status': False,
+                    'error_message': '"views" must be a valid integer.',
+                    'statusCode': 400,
+                    'data': {}
+                }), 400
+
+        #* Validate and handle the 'minutes' parameter
+        if minutes:
+            try:
+                minutes = int(minutes)
+                if not (1 <= minutes <= 1440):
+                    return jsonify({
+                        'status': False,
+                        'error_message': '"minutes" must be an integer between 1 and 1440.',
+                        'statusCode': 400,
+                        'data': {}
+                    }), 400
+                
+                #! Add the minutes argument to the command
+                command.extend(["--minutes", str(minutes)])
+            except ValueError:
+                return jsonify({
+                    'status': False,
+                    'error_message': '"minutes" must be a valid integer.',
+                    'statusCode': 400,
+                    'data': {}
+                }), 400
+
+        #? Validate and handle the 'password' parameter
+        if password:
+            if len(password) < 12:
+                return jsonify({
+                    'status': False,
+                    'error_message': '"password" must be at least 12 characters long.',
+                    'statusCode': 400,
+                    'data': {}
+                }), 400
+            
+            #* Add the password argument to the command
+            command.extend(["--password", password])
+
+        print("here's the updated commnad below!")
+        print(command)
+
+        #! Set shell=True for Windows, False for macOS/Linux
         shell_needed = True if os.name == 'nt' else False
 
         #? Running the CLI command and capturing the output
@@ -177,6 +257,11 @@ def create_note():
 @app.route('/upload-file', methods=['POST'])
 def upload_file():
     try:
+        #* Retrieve query parameters
+        views = request.args.get('views')
+        minutes = request.args.get('minutes')
+        password = request.args.get('password')
+
         #! Check if the POST request has the file part
         if 'file' not in request.files:
             return jsonify({
@@ -195,21 +280,84 @@ def upload_file():
                 'data': {}
             }), 400
 
-        #? Secure the filename and save it temporarily
+        #? Validate mutually exclusive query parameters
+        if views and minutes:
+            return jsonify({
+                'status': False,
+                'error_message': 'Only one of "views" or "minutes" should be present, not both.',
+                'statusCode': 400,
+                'data': {}
+            }), 400
+        
+        #* Secure the filename and save it temporarily
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        #* Prepare the command to send the file using Cryptgeon
+        #! Prepare the command to send the file using Cryptgeon
         command = ["npx", "cryptgeon", "send", "file", filepath]
 
-        #! Run the Cryptgeon CLI to upload the file and get the link
-        # result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+        #? Validate and handle the 'views' parameter
+        if views:
+            try:
+                views = int(views)
+                if not (1 <= views <= 10):
+                    return jsonify({
+                        'status': False,
+                        'error_message': '"views" must be an integer between 1 and 10.',
+                        'statusCode': 400,
+                        'data': {}
+                    }), 400
+                #* Add the views argument to the command
+                command.extend(["--views", str(views)])
+            except ValueError:
+                return jsonify({
+                    'status': False,
+                    'error_message': '"views" must be a valid integer.',
+                    'statusCode': 400,
+                    'data': {}
+                }), 400
 
+        #! Validate and handle the 'minutes' parameter
+        if minutes:
+            try:
+                minutes = int(minutes)
+                if not (1 <= minutes <= 1440):
+                    return jsonify({
+                        'status': False,
+                        'error_message': '"minutes" must be an integer between 1 and 1440.',
+                        'statusCode': 400,
+                        'data': {}
+                    }), 400
+                #? Add the minutes argument to the command
+                command.extend(["--minutes", str(minutes)])
+            except ValueError:
+                return jsonify({
+                    'status': False,
+                    'error_message': '"minutes" must be a valid integer.',
+                    'statusCode': 400,
+                    'data': {}
+                }), 400
+
+        #* Validate and handle the 'password' parameter
+        if password:
+            if len(password) < 12:
+                return jsonify({
+                    'status': False,
+                    'error_message': '"password" must be at least 12 characters long.',
+                    'statusCode': 400,
+                    'data': {}
+                }), 400
+            #! Add the password argument to the command
+            command.extend(["--password", password])
+
+        print("here's the updated commnad below!")
+        print(command)
+        
         #? Set shell=True for Windows, False for macOS/Linux
         shell_needed = True if os.name == 'nt' else False
 
-        #? Running the CLI command and capturing the output
+        #* Run the Cryptgeon CLI command to upload the file and get the link
         result = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL, shell=shell_needed)
 
         print("STDOUT:", result.stdout)
@@ -219,7 +367,7 @@ def upload_file():
             file_string = result.stdout.strip()
             file_url = file_string.replace("Note created:\n\n", "")
 
-            #? Clean up by removing the file after upload
+            #! Clean up by removing the file after upload
             os.remove(filepath)
 
             print("Here's the secret file link below")
