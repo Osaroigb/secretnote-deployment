@@ -1,8 +1,9 @@
-import os
 from app import app
-from dotenv import load_dotenv
+from config import Config
 
-load_dotenv()
+# Use Config class to access ENVs
+HOST = Config.HOST
+PORT = Config.PORT
 
 if __name__ == "__main__":
-    app.run(host=os.getenv("HOST"), port=os.getenv("PORT"), debug=True)
+    app.run(host=HOST, port=PORT, debug=True)
